@@ -174,31 +174,37 @@ def traduzir_instrucao(arquivo_entrada, arquivo_saida):
                     x = int(partes[1])
 
                     # Escreve as microinstruções
-                    saida.write("00010100100000000000101\n")
+                    saida.write("00010100100000000000101\n") # H = LV
                     
                     for _ in range(x):
-                        saida.write("00111101100000000000000\n")
+                        # CORRIGIDO: 00111001 (Soma H+1). Era 00111101 (Soma H+B+1)
+                        saida.write("00111001100000000000000\n") 
                     
-                    saida.write("00011100000000001010000\n")
-                    saida.write("00111001000001001100100\n")
-                    saida.write("00010100001000000000000\n")
+                    # CORRIGIDO: 00111000 (Passa H limpo). Era 00011100 (Faz OR com MDR)
+                    saida.write("00111000000000001010000\n") # MAR = H; rd 
+                    
+                    # CORRIGIDO: 00110101 (Soma B+1). Era 00111001 (Soma H+1)
+                    saida.write("00110101000001001100100\n") # MAR = SP = SP + 1; wr 
+                    saida.write("00010100001000000000000\n") # TOS = MDR
+
             elif linha.startswith("DUP"):
-                saida.write("00111001000001001000100\n")
-                saida.write("00010100000000010100111\n")
+                # CORRIGIDO: 00110101 (Soma B+1). Era 00111001 (Soma H+1)
+                saida.write("00110101000001001000100\n") # MAR = SP = SP + 1 
+                saida.write("00010100000000010100111\n") # MDR = TOS; wr
 
             elif linha.startswith("BIPUSH"):
                 partes = linha.split()
     
                 if len(partes) == 2:
                     valor = partes[1]
-
-                    # Garante que tem 8 bits (caso necessário)
                     valor = valor.zfill(8)
 
-                    saida.write("00111001000001001000100\n")
-                    saida.write(f"{valor}000000000110000\n")
-                    saida.write("00011100001000010100000\n")
-            
+                    # CORRIGIDO: 00110101 (Soma B+1). Era 00111001 (Soma H+1)
+                    saida.write("00110101000001001000100\n") # MAR = SP = SP + 1 
+                    saida.write(f"{valor}000000000110000\n") # H = MBR = valor (Especial)
+                    
+                    # CORRIGIDO: 00111000 (Passa H limpo). Era 00011100 (Faz OR com MDR)
+                    saida.write("00111000001000010100000\n") # MDR = TOS = H; wr
 
 def executar_simulador():
     arq_regs = "registradores_entregavel.txt".strip()
