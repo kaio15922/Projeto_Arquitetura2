@@ -63,21 +63,15 @@ def executar_tarefa1(sll8, sra1, f0, f1, ena, enb, inva, inc, A, B):
 # =====================================================================
 
 def executar_tarefa2_registrador(escolhido, OPC, TOS, CPP, LV, SP, MBR, PC, MDR):
-    """
-    Decodificador do Multiplexador do Barramento B.
-    Mapeia o sinal de controle de 4 bits para o registrador correspondente.
-    Retorna uma tupla contendo o mnemônico do registrador e seu valor em 32 bits.
-    """
     if escolhido == 0: return "mdr", MDR
     elif escolhido == 1: return "pc", PC
     elif escolhido == 2: 
-        # Seletor 2 (0010): Registrador MBR com Extensão de Zero (Zero Extension).
-        return "mbr", MBR 
+        # MBR (Com Sinal): Extensão de sinal para 32 bits
+        if MBR & 0x80: return "mbr", (MBR | 0xFFFFFF00) 
+        else: return "mbr", MBR
     elif escolhido == 3: 
-        # Seletor 3 (0011): Registrador MBR com Extensão de Sinal (Sign Extension).
-        # Verifica o MSB (bit 7) do MBR via máscara 0x80. Aplica OR com 0xFFFFFF00 se negativo.
-        if MBR & 0x80: return "mbru", (MBR | 0xFFFFFF00) 
-        else: return "mbru", MBR
+        # MBRU (Sem Sinal): Preenchimento com zeros
+        return "mbru", MBR 
     elif escolhido == 4: return "sp", SP
     elif escolhido == 5: return "lv", LV
     elif escolhido == 6: return "cpp", CPP
